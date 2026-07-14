@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neo-Bibliometrics Explorer | FISIPOL UGM</title>
+  <meta name="description" content="Dashboard bibliometrik interaktif modern untuk memetakan publikasi ilmiah, tugas akhir (ETD), dan artikel koran digital sivitas akademika FISIPOL UGM.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Libraries (loaded via CDN) -->
+  <script src="https://unpkg.com/force-graph"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Leaflet Map Library -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="dark-mode">
+
+  <!-- Header Section -->
+  <header class="app-header">
+    <div class="logo-area">
+      <div class="logo-icon"><i class="fa-solid fa-circle-nodes"></i></div>
+      <div class="logo-text">
+        <h1>Neo-Bibliometrics</h1>
+        <span>FISIPOL UGM Explorer</span>
+      </div>
+    </div>
+    
+    <!-- Instant Search Bar -->
+    <div class="search-container">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="text" id="global-search" placeholder="Cari judul, penulis, kata kunci..." autocomplete="off">
+      <button id="clear-search-btn" class="clear-btn" style="display: none;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    
+    <!-- Theme Toggle -->
+    <div class="header-actions">
+      <button id="theme-toggle-btn" class="icon-action-btn" title="Ubah Tema">
+        <i class="fa-solid fa-sun icon-light"></i>
+        <i class="fa-solid fa-moon icon-dark"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Filter Bar Section -->
+  <nav class="filter-bar">
+    <!-- Year Range Slider (Shared) -->
+    <div class="filter-group year-slider-group">
+      <label><i class="fa-solid fa-calendar-days"></i> Rentang Tahun: <span id="year-range-label">1990 - 2026</span></label>
+      <div class="range-slider-wrapper">
+        <input type="range" id="filter-year-min" min="1990" max="2026" value="1990">
+        <input type="range" id="filter-year-max" min="1990" max="2026" value="2026">
+      </div>
+    </div>
+    
+    <!-- ETD Sub-filters -->
+    <div class="sub-filter-section" id="sub-filters-etd">
+      <div class="filter-group">
+        <label for="filter-etd-type"><i class="fa-solid fa-graduation-cap"></i> Tipe Tugas Akhir</label>
+        <select id="filter-etd-type">
+          <option value="all">Semua Tipe</option>
+          <option value="Skripsi">Skripsi (S1)</option>
+          <option value="Tesis">Tesis (S2)</option>
+          <option value="Disertasi">Disertasi (S3)</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="filter-etd-dept"><i class="fa-solid fa-building-columns"></i> Departemen</label>
+        <select id="filter-etd-dept">
+          <option value="all">Semua Departemen</option>
+          <option value="Manajemen dan Kebijakan Publik">Manajemen dan Kebijakan Publik (MKP)</option>
+          <option value="Hubungan Internasional">Hubungan Internasional (DIHI)</option>
+          <option value="Ilmu Komunikasi">Ilmu Komunikasi (DIKOM)</option>
+          <option value="Sosiologi">Sosiologi</option>
+          <option value="Politik dan Pemerintahan">Politik dan Pemerintahan (DPP)</option>
+          <option value="Pembangunan Sosial dan Kesejahteraan">Pembangunan Sosial dan Kesejahteraan (PSdK)</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- Publikasi Sub-filters (Hidden by default) -->
+    <div class="sub-filter-section" id="sub-filters-publikasi" style="display: none;">
+      <div class="filter-group">
+        <label for="filter-pub-dept"><i class="fa-solid fa-building-columns"></i> Departemen</label>
+        <select id="filter-pub-dept">
+          <option value="all">Semua Departemen</option>
+          <option value="Manajemen dan Kebijakan Publik">Manajemen dan Kebijakan Publik (MKP)</option>
+          <option value="Hubungan Internasional">Hubungan Internasional (DIHI)</option>
+          <option value="Ilmu Komunikasi">Ilmu Komunikasi (DIKOM)</option>
+          <option value="Sosiologi">Sosiologi</option>
+          <option value="Politik dan Pemerintahan">Politik dan Pemerintahan (DPP)</option>
+          <option value="Pembangunan Sosial dan Kesejahteraan">Pembangunan Sosial dan Kesejahteraan (PSdK)</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="filter-pub-country"><i class="fa-solid fa-globe"></i> Negara Kolaborasi</label>
+        <select id="filter-pub-country">
+          <option value="all">Semua Negara</option>
+        </select>
+      </div>
+      
+    </div>
+    
+    <!-- Koran Sub-filters (Hidden by default) -->
+    <div class="sub-filter-section" id="sub-filters-koran" style="display: none;">
+      <div class="filter-group">
+        <label for="filter-koran-source"><i class="fa-solid fa-newspaper"></i> Sumber Berita</label>
+        <select id="filter-koran-source">
+          <option value="all">Semua Sumber</option>
+          <option value="The Jakarta Post">The Jakarta Post</option>
+          <option value="Kompas">Kompas</option>
+          <option value="Republika">Republika</option>
+          <option value="Jawa Pos">Jawa Pos</option>
+          <option value="Kedaulatan Rakyat">Kedaulatan Rakyat</option>
+          <option value="Media Indonesia">Media Indonesia</option>
+          <option value="Tempo">Tempo</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="filter-koran-topic"><i class="fa-solid fa-tags"></i> Topik Utama</label>
+        <select id="filter-koran-topic">
+          <option value="all">Semua Topik</option>
+          <option value="Nasional">Nasional</option>
+          <option value="Sosial Politik">Sosial Politik</option>
+          <option value="Internasional">Internasional</option>
+          <option value="Hukum">Hukum</option>
+          <option value="Ekonomi">Ekonomi</option>
+          <option value="Teknologi">Teknologi</option>
+          <option value="Daerah">Daerah</option>
+          <option value="Budaya">Budaya</option>
+          <option value="Entertainment">Entertainment</option>
+        </select>
+      </div>
+    </div>
+
+    <button id="reset-filters-btn" class="btn btn-secondary"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+  </nav>
+
+  <!-- Main Content Layout -->
+  <div class="app-layout">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar">
+      <nav class="sidebar-nav">
+        <button id="nav-etd-btn" class="nav-item active" data-source="etd">
+          <i class="fa-solid fa-graduation-cap"></i>
+          <span>ETD Explorer</span>
+        </button>
+        <button id="nav-publikasi-btn" class="nav-item" data-source="sivitas">
+          <i class="fa-solid fa-book-bookmark"></i>
+          <span>Publikasi Explorer</span>
+        </button>
+        <button id="nav-koran-btn" class="nav-item" data-source="koran">
+          <i class="fa-solid fa-newspaper"></i>
+          <span>Koran Explorer</span>
+        </button>
+        <button id="nav-analytics-btn" class="nav-item">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Analisis Statistik</span>
+        </button>
+      </nav>
+      
+      <!-- Stats Overview -->
+      <div class="stats-overview">
+        <h3>Ringkasan Data</h3>
+        <div class="stat-card" id="stat-docs">
+          <span class="stat-num">0</span>
+          <span class="stat-label">Dokumen</span>
+        </div>
+        <div class="stat-card" id="stat-authors">
+          <span class="stat-num">0</span>
+          <span class="stat-label">Penulis</span>
+        </div>
+        <div class="stat-card" id="stat-keywords">
+          <span class="stat-num">0</span>
+          <span class="stat-label">Kata Kunci</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace Container -->
+    <main class="app-workspace">
+      
+      <!-- LOADING SCREEN -->
+      <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Memuat dataset Neo-Bibliometrics...</p>
+        <span class="loading-progress" id="loading-progress">0%</span>
+      </div>
+
+      <!-- SECTION 1: NETWORK VIEW -->
+      <section id="workspace-network" class="workspace-section active">
+        <div class="section-controls">
+          <div class="control-left">
+            <button id="net-mode-author-btn" class="btn btn-tab active">Co-Authorship</button>
+            <button id="net-mode-keyword-btn" class="btn btn-tab">Keyword Co-occurrence</button>
+          </div>
+          
+          <div class="control-right">
+            <div class="frequency-control">
+              <label for="node-freq-slider">Min. Frekuensi: <span id="freq-val">3</span></label>
+              <input type="range" id="node-freq-slider" min="1" max="15" value="3">
+            </div>
+            <button id="fit-graph-btn" class="btn btn-icon-only" title="Fit Graph"><i class="fa-solid fa-expand"></i></button>
+          </div>
+        </div>
+
+        <div class="network-canvas-container">
+          <div id="network-graph-canvas"></div>
+          <div id="map-container" style="display: none; height: 100%; width: 100%; border-radius: 12px; overflow: hidden; background-color: #0b0f19;"></div>
+          <!-- Graph Legend / Info -->
+          <div class="graph-legend">
+            <div class="legend-item" id="legend-etd"><span class="color-dot src-etd"></span> ETD</div>
+            <div class="legend-item" id="legend-sivitas"><span class="color-dot src-sivitas"></span> Publikasi</div>
+            <div class="legend-item" id="legend-koran"><span class="color-dot src-koran"></span> Koran</div>
+            <div class="legend-item text-muted" id="graph-nodes-count">Nodes: 0 | Edges: 0</div>
+          </div>
+          
+          <!-- Limit Warning Badge -->
+          <div id="graph-limit-warning" class="graph-warning" style="display: none;">
+            <i class="fa-solid fa-triangle-exclamation"></i> Menampilkan 200 node teratas. Filter rentang tahun atau departemen untuk melihat jejaring penuh.
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: ANALYTICS VIEW -->
+      <section id="workspace-analytics" class="workspace-section">
+        <div class="section-controls" style="margin-bottom: 20px;">
+          <div class="control-left">
+            <button id="analytics-etd-btn" class="btn btn-tab active">Statistik ETD</button>
+            <button id="analytics-publikasi-btn" class="btn btn-tab">Statistik Publikasi</button>
+            <button id="analytics-koran-btn" class="btn btn-tab">Statistik Koran</button>
+          </div>
+        </div>
+        
+        <div class="analytics-grid">
+          
+          <!-- Row 1: Publication Trend -->
+          <div class="analytics-card span-2">
+            <div class="card-header">
+              <h3><i class="fa-solid fa-chart-area"></i> Tren Publikasi Per Tahun</h3>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-trend"></canvas>
+            </div>
+          </div>
+          
+          <!-- Row 2: Top Authors & SDG -->
+          <div class="analytics-card">
+            <div class="card-header">
+              <h3><i class="fa-solid fa-user-graduate"></i> Top Penulis Terproduktif</h3>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-authors"></canvas>
+            </div>
+          </div>
+          
+          <div class="analytics-card">
+            <div class="card-header">
+              <h3><i class="fa-solid fa-seedling"></i> Distribusi SDG (Sustainable Development Goals)</h3>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-sdg"></canvas>
+            </div>
+          </div>
+          
+          <!-- Row 3: Department & Top Publisher -->
+          <div class="analytics-card">
+            <div class="card-header">
+              <h3><i class="fa-solid fa-users-gear"></i> Sebaran Departemen</h3>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-depts"></canvas>
+            </div>
+          </div>
+          
+          <div class="analytics-card">
+            <div class="card-header">
+              <h3><i class="fa-solid fa-newspaper"></i> Top Publisher / Sumber Berita</h3>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-publisher"></canvas>
+            </div>
+          </div>
+          
+        </div>
+      </section>
+      
+    </main>
+
+    <!-- ResearchRabbit Cascading Relational Slider -->
+    <aside id="researchrabbit-container" class="researchrabbit-slider-container">
+      <button id="close-rabbit-btn" class="close-rabbit-btn"><i class="fa-solid fa-chevron-right"></i></button>
+      <div class="rabbit-scroll-area" id="rabbit-scroll-area">
+        <!-- Cascading cards will be dynamically appended here -->
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p>Neo-Bibliometrics Explorer &copy; 2026 FISIPOL UGM. Dikembangkan dengan &hearts; untuk Riset Unggul.</p>
+  </footer>
+
+  <!-- Main JavaScript Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
