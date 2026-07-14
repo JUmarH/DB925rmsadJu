@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Leaflet Map state
   let leafletMap = null;
   let leafletLayerGroup = null;
+  let clusterMode = false;
   
   // ResearchRabbit cascading panel state
   let rabbitCards = []; // Array of card objects: { type, id, title, data }
@@ -604,8 +605,8 @@ document.addEventListener('DOMContentLoaded', () => {
       graphCanvas.style.display = 'none';
       document.querySelector('.graph-legend').style.display = 'none';
       document.querySelector('.frequency-control').style.visibility = 'hidden';
-      if (!mapInstance) initMap();
-      else setTimeout(() => mapInstance.invalidateSize(), 100);
+      if (!leafletMap) initMap();
+      else setTimeout(() => leafletMap.invalidateSize(), 100);
     } else {
       mapContainer.style.display = 'none';
       graphCanvas.style.display = 'block';

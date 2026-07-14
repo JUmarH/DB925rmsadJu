@@ -59,7 +59,7 @@ import os
 # Load manual blacklist if exists
 if os.path.exists('blacklist_dosen.txt'):
     with open('blacklist_dosen.txt', 'r', encoding='utf-8') as f:
-        manual_blacklist = {line.strip().lower() for line in f if line.strip()}
+        manual_blacklist = {line.strip().lower().replace(" ", "") for line in f if line.strip()}
         IGNORE_DEGREES_NO_SPACES.update(manual_blacklist)
 
 # Load 176 Canonical Dosen List for OpenRefine-like matching

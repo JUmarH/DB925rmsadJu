@@ -86,7 +86,7 @@
       }
       
       const names = Array.from(checked).map(c => c.value);
-      const content = names.join('\\n');
+      const content = names.join('\n');
       
       const blob = new Blob([content], { type: 'text/plain' });
       const a = document.createElement('a');
