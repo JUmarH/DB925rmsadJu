@@ -62,6 +62,16 @@ if os.path.exists('blacklist_dosen.txt'):
         manual_blacklist = {line.strip().lower() for line in f if line.strip()}
         IGNORE_DEGREES_NO_SPACES.update(manual_blacklist)
 
+# Load 176 Canonical Dosen List for OpenRefine-like matching
+CANONICAL_DOSEN_MAP = {}
+if os.path.exists('176_dosen_fisipol_clean.txt'):
+    with open('176_dosen_fisipol_clean.txt', 'r', encoding='utf-8') as f:
+        for line in f:
+            name = line.strip()
+            if name:
+                norm = name.lower().replace(" ", "")
+                CANONICAL_DOSEN_MAP[norm] = name
+
 # List of known countries for affiliation cleaning
 KNOWN_COUNTRIES = {
     'indonesia', 'malaysia', 'singapore', 'thailand', 'vietnam', 'philippines', 'brunei', 'cambodia', 'laos', 'myanmar',
@@ -371,10 +381,27 @@ def load_etd(registry):
         all_authors = [a for a in all_authors if a]
         
         all_authors = [resolve_initials_to_fullname(a, registry) for a in all_authors]
-        all_authors = [a for a in all_authors if a.lower().replace(" ", "") not in IGNORE_DEGREES_NO_SPACES]
         
-        # Deduplicate
-        all_authors = list(dict.fromkeys(all_authors))
+        # OpenRefine-like Canonical Matching and Cleanup
+        final_authors = []
+        for i, a in enumerate(all_authors):
+            a_norm = a.lower().replace(" ", "")
+            if a_norm in IGNORE_DEGREES_NO_SPACES or len(a_norm) < 3:
+                continue
+                
+            if i > 0: # Check advisors against canonical list
+                matched = False
+                for can_norm, can_orig in CANONICAL_DOSEN_MAP.items():
+                    if can_norm in a_norm:
+                        final_authors.append(can_orig)
+                        matched = True
+                        break
+                if matched:
+                    continue
+                    
+            final_authors.append(a)
+            
+        all_authors = list(dict.fromkeys(final_authors))
         if not all_authors:
             continue
             
