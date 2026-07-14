@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateStats();
     
     if (activeTab === 'network') {
-      if (activeExplorer === 'sivitas') {
+      if (networkMode === 'map') {
         renderMap();
       } else {
         renderNetwork();
@@ -606,7 +606,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelector('.graph-legend').style.display = 'none';
       document.querySelector('.frequency-control').style.visibility = 'hidden';
       if (!leafletMap) initMap();
-      else setTimeout(() => leafletMap.invalidateSize(), 100);
+      else setTimeout(() => leafletMap.invalidateSize(), 300);
     } else {
       mapContainer.style.display = 'none';
       graphCanvas.style.display = 'block';
