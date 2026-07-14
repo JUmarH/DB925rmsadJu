@@ -49,7 +49,7 @@ IGNORE_DEGREES_NO_SPACES = {
     'coauthor', 'dan', 'and', 'etal', 'null', 'none', 'nan', 'unknown', 'co', 'msocscpratikno',
     'mscsamodrawibawa', 'mscedhimartono', 'sutaryomsc', 'wisnumarthaadiputramsc', 'mscirtyasutami',
     'drkuskridhoambardi', 'drelysusanto', 'profdrpurwosantoso',
-    'mpoladmin', 'sh', 'ssos', 'is', 'mpol', 'admin', 'imas'
+    'mpoladmin', 'sh', 'ssos', 'is', 'mpol', 'admin', 'imas', 'mcsecurityanalysis', 'nurhadi'
 }
 
 # List of known countries for affiliation cleaning
@@ -380,6 +380,9 @@ def load_etd(registry):
         except ValueError:
             year_int = 2024
             
+        if year_int < 1950 or year_int > 2027:
+            continue
+            
         # Standardize document type for ETD Sub-items: Skripsi, Tesis, Disertasi
         standard_doc_type = "Skripsi"
         dt_lower = doc_type.lower() if doc_type else ""
@@ -533,6 +536,9 @@ def load_sivitas(registry):
         except ValueError:
             year_int = 2024
             
+        if year_int < 1950 or year_int > 2027:
+            continue
+            
         pub_source = source_title if source_title else (publisher if publisher else "Sivitas FISIPOL")
         
         unified.append({
@@ -579,6 +585,9 @@ def load_koran_excel(registry):
                 year = int(row['Tahun']) if pd.notna(row['Tahun']) else 2024
             except ValueError:
                 year = 2024
+                
+            if year < 1950 or year > 2027:
+                continue
                 
             authors = ["Redaksi " + publisher]
             
@@ -663,7 +672,7 @@ def load_koran_folder(registry):
             df_renamed = df.rename(columns=cols_lower)
             
             # Identify file type: Scopus Export vs News Digitations
-            is_scopus = 'author full names' in df_renamed.columns or 'affiliations' in df_renamed.columns or 'authors with affiliations' in df_renamed.columns
+            is_scopus = any(c in df_renamed.columns for c in ['doi', 'document type', 'affiliations', 'authors with affiliations', 'eid', 'volume', 'issue'])
             
             for idx, row in df_renamed.iterrows():
                 title = ""
@@ -735,6 +744,9 @@ def load_koran_folder(registry):
                         except ValueError:
                             pass
                         break
+                        
+                if year < 1950 or year > 2027:
+                    continue
                         
                 # Extract affiliation details for Scopus files
                 countries = ['Indonesia']

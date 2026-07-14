@@ -251,7 +251,10 @@ document.addEventListener('DOMContentLoaded', () => {
       else if (explorerName === 'koran') targetBtn = document.getElementById('analytics-koran-btn');
       if (targetBtn) targetBtn.classList.add('active');
     } else {
+      activeTab = 'network';
       navAnalyticsBtn.classList.remove('active');
+      sectionAnalytics.style.display = 'none';
+      sectionNetwork.style.display = 'flex';
       
       // Update canvas visibility: Sivitas shows Leaflet Map, others show force-graph
       if (explorerName === 'sivitas') {
@@ -278,7 +281,10 @@ document.addEventListener('DOMContentLoaded', () => {
     subPubSection.style.display = (explorerName === 'sivitas') ? 'flex' : 'none';
     subKoranSection.style.display = (explorerName === 'koran') ? 'flex' : 'none';
     
-    closeResearchRabbitPanel();
+    // Update network mode text based on explorer
+    netModeAuthorBtn.innerText = (explorerName === 'koran') ? 'Jejaring Penulis Berita' : 'Co-Authorship';
+    
+    closeRabbitPanel();
     applyFilters();
   }
   
@@ -632,13 +638,28 @@ document.addEventListener('DOMContentLoaded', () => {
       marker.on('click', function(e) {
         filterPubCountry.value = capCountry;
         applyFilters();
+        
+        // Find authors associated with this country and open Rabbit panel
+        const authorsForCountry = new Set();
+        filteredDocs.forEach(d => {
+          if (d.source === 'sivitas' && d.countries && d.countries.includes(capCountry)) {
+            if (d.authors) d.authors.forEach(a => authorsForCountry.add(a));
+          }
+        });
+        
+        const authorsList = Array.from(authorsForCountry);
+        if (authorsList.length > 0) {
+           rabbitContainer.classList.add('open');
+           rabbitScrollArea.innerHTML = '';
+           rabbitCards = [];
+           appendAuthorsListCard(authorsList, `Peneliti di ${capCountry}`, 0);
+        }
       });
       
       // Draw link line from Yogyakarta to country
       const linkLine = L.polyline([jogjaCoords, coords], {
-        color: 'rgba(6, 182, 212, 0.4)', // semi-transparent cyan
-        weight: Math.min(6, Math.max(1, count / 5)),
-        dashArray: '5, 5'
+        color: 'rgba(6, 182, 212, 0.8)', // solid and more opaque cyan
+        weight: Math.min(6, Math.max(2, count / 5))
       }).addTo(leafletLayerGroup);
       
       linkLine.bindPopup(`Jalur Kolaborasi: UGM &harr; ${capCountry} (${count} Karya)`);
