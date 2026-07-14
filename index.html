@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Main CSS -->
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=1.2">
   
   <!-- Libraries (loaded via CDN) -->
   <script src="https://unpkg.com/force-graph"></script>
@@ -208,6 +208,7 @@
           <div class="control-left">
             <button id="net-mode-author-btn" class="btn btn-tab active">Co-Authorship</button>
             <button id="net-mode-keyword-btn" class="btn btn-tab">Keyword Co-occurrence</button>
+            <button id="net-mode-map-btn" class="btn btn-tab" style="display: none;"><i class="fa-solid fa-earth-asia"></i> World Map</button>
           </div>
           
           <div class="control-right">
@@ -224,7 +225,12 @@
           <div id="map-container" style="display: none; height: 100%; width: 100%; border-radius: 12px; overflow: hidden; background-color: #0b0f19;"></div>
           <!-- Graph Legend / Info -->
           <div class="graph-legend">
-            <div class="legend-item" id="legend-etd"><span class="color-dot src-etd"></span> ETD</div>
+            <div class="legend-item" id="legend-etd" style="flex-wrap: wrap;">
+              <span class="color-dot" style="background-color: #3b82f6;"></span> S1
+              <span class="color-dot" style="background-color: #22c55e; margin-left: 8px;"></span> S2
+              <span class="color-dot" style="background-color: #eab308; margin-left: 8px;"></span> S3
+              <span class="color-dot" style="background-color: #ef4444; margin-left: 8px;"></span> Dosen
+            </div>
             <div class="legend-item" id="legend-sivitas"><span class="color-dot src-sivitas"></span> Publikasi</div>
             <div class="legend-item" id="legend-koran"><span class="color-dot src-koran"></span> Koran</div>
             <div class="legend-item text-muted" id="graph-nodes-count">Nodes: 0 | Edges: 0</div>
@@ -318,6 +324,6 @@
   </footer>
 
   <!-- Main JavaScript Application Logic -->
-  <script src="app.js"></script>
+  <script src="app.js?v=1.2"></script>
 </body>
 </html>
