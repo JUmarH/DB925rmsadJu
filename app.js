@@ -357,39 +357,26 @@ document.addEventListener('DOMContentLoaded', () => {
       loadingOverlay.style.display = 'flex';
       loadingProgress.textContent = '0%';
       
-      const response = await fetch('https://cdn.jsdelivr.net/gh/JUmarH/DB925rmsadJu@main/data/unified_publications.json');
-      if (!response.ok) {
-        throw new Error('Gagal mengambil data unified_publications.json');
-      }
+      const BASE = 'https://cdn.jsdelivr.net/gh/JUmarH/DB925rmsadJu@main/data/';
+      const [p1, p2, p3] = await Promise.all([
+          fetch(BASE + 'unified_part_1.json').then(r => {
+              if (!r.ok) throw new Error('Gagal mengambil part 1');
+              loadingProgress.textContent = '33%';
+              return r.json();
+          }),
+          fetch(BASE + 'unified_part_2.json').then(r => {
+              if (!r.ok) throw new Error('Gagal mengambil part 2');
+              loadingProgress.textContent = '66%';
+              return r.json();
+          }),
+          fetch(BASE + 'unified_part_3.json').then(r => {
+              if (!r.ok) throw new Error('Gagal mengambil part 3');
+              loadingProgress.textContent = '100%';
+              return r.json();
+          })
+      ]);
       
-      // Reading stream progress (premium micro-interaction)
-      const reader = response.body.getReader();
-      const contentLength = +response.headers.get('Content-Length') || 36000000; // fallback length (approx 34MB)
-      let receivedLength = 0;
-      let chunks = [];
-      
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value);
-        receivedLength += value.length;
-        const progress = Math.min(99, Math.round((receivedLength / contentLength) * 100));
-        loadingProgress.textContent = `${progress}%`;
-      }
-      
-      loadingProgress.textContent = '100%';
-      
-      // Concatenate chunks
-      let chunksAll = new Uint8Array(receivedLength);
-      let position = 0;
-      for (let chunk of chunks) {
-        chunksAll.set(chunk, position);
-        position += chunk.length;
-      }
-      
-      // Decode
-      let result = new TextDecoder("utf-8").decode(chunksAll);
-      allDocs = JSON.parse(result);
+      allDocs = [...p1, ...p2, ...p3];
       
       // Complete Loading
       setTimeout(() => {
