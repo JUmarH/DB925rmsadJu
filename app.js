@@ -4,6 +4,9 @@
  * Libraries: force-graph (CDN), Chart.js (CDN)
  */
 
+// Global Force Graph instance (accessible in console)
+window.graphInstance = null;
+
 document.addEventListener('DOMContentLoaded', () => {
   // --- STATE VARIABLES ---
   let allDocs = [];
@@ -21,9 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     publisher: null
   };
   
-  // Force Graph instance
-  let graphInstance = null;
-  
+  // Force Graph instance (moved to global window object)
   // Leaflet Map state
   let leafletMap = null;
   let leafletLayerGroup = null;
@@ -164,8 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
           toggleAnalyticsBtn.classList.add('active');
           sectionNetwork.style.display = 'none';
           sectionAnalytics.style.display = 'flex';
-          if (graphInstance) {
-             graphInstance.pauseAnimation();
+          if (window.graphInstance) {
+             window.graphInstance.pauseAnimation();
           }
           renderCharts();
        } else {
@@ -174,8 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
           toggleAnalyticsBtn.classList.remove('active');
           sectionAnalytics.style.display = 'none';
           sectionNetwork.style.display = 'flex';
-          if (graphInstance) {
-             graphInstance.resumeAnimation();
+          if (window.graphInstance) {
+             window.graphInstance.resumeAnimation();
           }
        }
     });
@@ -246,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderNetwork();
     });
     fitGraphBtn.addEventListener('click', () => {
-      if (graphInstance) graphInstance.zoomToFit(400);
+      if (window.graphInstance) window.graphInstance.zoomToFit(400);
     });
     
     // ResearchRabbit Controls
@@ -352,8 +353,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Export JSON (VOSviewer format)
     document.getElementById('export-json-btn').addEventListener('click', () => {
-       if (!graphInstance) return alert("Grafik belum diinisialisasi");
-       const currentData = graphInstance.graphData();
+       if (!window.graphInstance) return alert("Grafik belum diinisialisasi");
+       const currentData = window.graphInstance.graphData();
        if (!currentData || !currentData.nodes || currentData.nodes.length === 0) return alert("Tidak ada data untuk diekspor");
        const vosData = {
            network: {
@@ -485,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
        csvUploadOverlay.style.display = 'flex';
        // Empty the graph and hide analytics while on custom menu and no data
        if (!window.customDataset || window.customDataset.length === 0) {
-           if (graphInstance) graphInstance.graphData({ nodes: [], links: [] });
+           if (window.graphInstance) window.graphInstance.graphData({ nodes: [], links: [] });
            graphNodesCount.innerText = "Nodes: 0 | Edges: 0";
        }
     } else {
@@ -1112,7 +1113,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // Draw force-graph
-    graphInstance = ForceGraph()(canvasContainer)
+    window.graphInstance = ForceGraph()(canvasContainer)
       .graphData(graphData)
       .nodeId('id')
       .nodeVal('val')
@@ -1187,8 +1188,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       
     // Set Forces
-    graphInstance.d3Force('charge').strength(-150);
-    graphInstance.d3Force('link').distance(80);
+    window.graphInstance.d3Force('charge').strength(-150);
+    window.graphInstance.d3Force('link').distance(80);
   }
   
   // --- ANALYTICS CHARTS RENDERING (Chart.js) ---
