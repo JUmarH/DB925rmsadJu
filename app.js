@@ -352,11 +352,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Export JSON (VOSviewer format)
     document.getElementById('export-json-btn').addEventListener('click', () => {
-       if (!graphData || !graphData.nodes) return alert("Tidak ada data untuk diekspor");
+       if (!graphInstance) return alert("Grafik belum diinisialisasi");
+       const currentData = graphInstance.graphData();
+       if (!currentData || !currentData.nodes || currentData.nodes.length === 0) return alert("Tidak ada data untuk diekspor");
        const vosData = {
            network: {
-               items: graphData.nodes.map(n => ({ id: n.id, label: n.label || n.id, cluster: n.group, weight: n.val })),
-               links: graphData.links.map(l => ({ source_id: l.source.id || l.source, target_id: l.target.id || l.target, strength: l.val || 1 }))
+               items: currentData.nodes.map(n => ({ id: n.id, label: n.label || n.id, cluster: n.group || n.cluster || 1, weight: n.val || 1 })),
+               links: currentData.links.map(l => ({ source_id: l.source.id || l.source, target_id: l.target.id || l.target, strength: l.val || l.weight || 1 }))
            }
        };
        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(vosData, null, 2));
