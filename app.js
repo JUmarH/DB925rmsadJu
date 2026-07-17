@@ -170,7 +170,6 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           renderCharts();
        } else {
-  }
           activeTab = 'network';
           toggleAnalyticsBtn.innerHTML = '<i class="fa-solid fa-chart-pie"></i> Analitik';
           toggleAnalyticsBtn.classList.remove('active');
